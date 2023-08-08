@@ -1,22 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Memo</title>
+    <title>Memo App</title>
   </head>
   <body>
+    <h1>Memo App</h1>
     <form id="memo-form">
-      <label for="memo-input">메모를 입력하세요</label>
-      <input
-        id="memo-input"
-        type="text"
-        placeholder="여기에 입력해주세요."
-        required
-      />
-      <button id="memo-submit" type="submit">저장</button>
+      <label for="memo-content">메모 내용:</label>
+      <input type="text" id="memo-content" name="memo-content" required />
+      <button type="submit">메모 추가</button>
     </form>
-    <ul id="memo-ul"></ul>
+    <ul id="memo-list"></ul>
     <script src="app.js"></script>
   </body>
 </html>

@@ -1,46 +1,78 @@
-function displayMemo(memo) {
-  const ul = document.querySelector("#memo-ul");
-  const li = document.createElement("li");
-  li.innerText = `[id:${memo.id}] ${memo.content}`;
-  ul.appendChild(li);
+const API_URL = "/memo/";
+
+async function fetchMemos() {
+  const response = await fetch(API_URL);
+  const memos = await response.json();
+  displayMemos(memos);
 }
 
-async function readMemo() {
-  const res = await fetch("/memos");
-  const jsonres = await res.json();
-  //jsonres = [{id:"", content:""}]
-  const ul = document.querySelector("#memo-ul");
-  ul.innerHTML = "";
-  jsonres.foreach(displayMemo);
-  // 배열로 저장된 jsonres 값에 각각 displayMemo라는 함수를 실행
-}
-
-async function createMemo(value) {
-  const res = await fetch("/memos", {
-    // default : get(조회) 요청
-    method: "POST", // Create를 해야 하기 때문에 POST로 변경
+async function createMemo(content) {
+  const response = await fetch(API_URL, {
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      // 문자열로 바꾸는 코드
-      id: new Date().getTime(),
-      content: value,
-    }),
+    body: JSON.stringify({ id: Date.now(), content }),
+  });
+  const memo = await response.json();
+  displayMemo(memo);
+}
+
+async function deleteMemo(e) {
+  const id = e.target.dataset.id;
+  await fetch(API_URL + `${id}`, {
+    method: "DELETE",
+  });
+  fetchMemos();
+}
+
+async function editMemo(e) {
+  const id = e.target.dataset.id;
+  const editText = prompt("메모 내용을 수정하세요:");
+
+  await fetch(API_URL + `${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ id, content: editText }),
+  });
+  fetchMemos();
+}
+
+function displayMemos(memos) {
+  const memoList = document.getElementById("memo-list");
+  memoList.innerHTML = "";
+  memos.forEach(displayMemo);
+}
+
+function displayMemo(memo) {
+  const memoList = document.getElementById("memo-list");
+
+  const listItem = document.createElement("li");
+  listItem.textContent = `${memo.id}: ${memo.content}`;
+  memoList.appendChild(listItem);
+
+  const delBtn = document.createElement("button");
+  delBtn.textContent = "X";
+  delBtn.dataset["id"] = memo.id;
+  delBtn.addEventListener("click", deleteMemo);
+  memoList.appendChild(delBtn);
+
+  const editButton = document.createElement("button");
+  editButton.textContent = "수정";
+  editButton.dataset["id"] = memo.id;
+  editButton.addEventListener("click", editMemo);
+  memoList.appendChild(editButton);
+}
+
+document
+  .getElementById("memo-form")
+  .addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const content = document.getElementById("memo-content").value;
+    await createMemo(content);
+    document.getElementById("memo-content").value = "";
   });
 
-  readMemo();
-}
-
-function handleSubmit(event) {
-  event.preventDefault(); // submit 이벤트는 눌러짐과 동시에 새로고침을 실행하기 때문에 값을 확인할 수 없음.
-  //그것을 방지하기 위한 코드
-  const input = document.querySelector("#memo-input");
-  createMemo(input.value);
-  input.value = "";
-}
-
-const form = document.querySelector("#memo-form");
-form.addEventListener("submit", handleSubmit); //form에 있는 값이 제출됐을 때 발생하는 이벤트
-
-readMemo();
+fetchMemos();
